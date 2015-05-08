@@ -7,13 +7,13 @@ function Asteroids() {
 			enemiesKilled: 0,
 			startedPlaying: (new Date()).getTime()
 		};
-	
+
 	var BASEPATH = 'http://kickassapp.com/';
-	
+
 	/*
 		Classes
 	*/
-	
+
 	function Vector(x, y) {
 		if ( typeof x == 'Object' ) {
 			this.x = x.x;
@@ -23,42 +23,42 @@ function Asteroids() {
 			this.y = y;
 		}
 	};
-	
+
 	Vector.prototype = {
 		cp: function() {
 			return new Vector(this.x, this.y);
 		},
-		
+
 		mul: function(factor) {
 			this.x *= factor;
 			this.y *= factor;
 			return this;
 		},
-		
+
 		mulNew: function(factor) {
 			return new Vector(this.x * factor, this.y * factor);
 		},
-		
+
 		add: function(vec) {
 			this.x += vec.x;
 			this.y += vec.y;
 			return this;
 		},
-		
+
 		addNew: function(vec) {
 			return new Vector(this.x + vec.x, this.y + vec.y);
 		},
-		
+
 		sub: function(vec) {
 			this.x -= vec.x;
 			this.y -= vec.y;
 			return this;
 		},
-		
+
 		subNew: function(vec) {
 			return new Vector(this.x - vec.x, this.y - vec.y);
 		},
-		
+
 		// angle in radians
 		rotate: function(angle) {
 			var x = this.x, y = this.y;
@@ -66,12 +66,12 @@ function Asteroids() {
 			this.y = x * Math.sin(angle) + Math.cos(angle) * y;
 			return this;
 		},
-		
+
 		// angle still in radians
 		rotateNew: function(angle) {
 			return this.cp().rotate(angle);
 		},
-		
+
 		// angle in radians... again
 		setAngle: function(angle) {
 			var l = this.len();
@@ -79,75 +79,75 @@ function Asteroids() {
 			this.y = Math.sin(angle) * l;
 			return this;
 		},
-		
+
 		// RADIANS
 		setAngleNew: function(angle) {
 			return this.cp().setAngle(angle);
 		},
-		
+
 		setLength: function(length) {
 			var l = this.len();
 			if ( l ) this.mul(length / l);
 			else this.x = this.y = length;
 			return this;
 		},
-		
+
 		setLengthNew: function(length) {
 			return this.cp().setLength(length);
 		},
-		
+
 		normalize: function() {
 			var l = this.len();
 			this.x /= l;
 			this.y /= l;
 			return this;
 		},
-		
+
 		normalizeNew: function() {
 			return this.cp().normalize();
 		},
-		
+
 		angle: function() {
 			return Math.atan2(this.y, this.x);
 		},
-		
+
 		collidesWith: function(rect) {
 			return this.x > rect.x && this.y > rect.y && this.x < rect.x + rect.width && this.y < rect.y + rect.height;
 		},
-		
+
 		len: function() {
 			var l = Math.sqrt(this.x * this.x + this.y * this.y);
 			if ( l < 0.005 && l > -0.005) return 0;
 			return l;
 		},
-		
+
 		is: function(test) {
-		
+
 			return typeof test == 'object' && this.x == test.x && this.y == test.y;
 		},
-		
+
 		toString: function() {
 			return '[Vector(' + this.x + ', ' + this.y + ') angle: ' + this.angle() + ', length: ' + this.len() + ']';
 		}
 	};
-	
+
 	function Line(p1, p2) {
 		this.p1 = p1;
 		this.p2 = p2;
 	};
-	
+
 	Line.prototype = {
 		shift: function(pos) {
 			this.p1.add(pos);
 			this.p2.add(pos);
 		},
-		
+
 		intersectsWithRect: function(rect) {
 			var LL = new Vector(rect.x, rect.y + rect.height);
 			var UL = new Vector(rect.x, rect.y);
 			var LR = new Vector(rect.x + rect.width, rect.y + rect.height);
 			var UR = new Vector(rect.x + rect.width, rect.y);
-			
+
 			if (
 				this.p1.x > LL.x && this.p1.x < UR.x && this.p1.y < LL.y && this.p1.y > UR.y &&
 				this.p2.x > LL.x && this.p2.x < UR.x && this.p2.y < LL.y && this.p2.y > UR.y
@@ -159,34 +159,34 @@ function Asteroids() {
 			if ( this.intersectsLine(new Line(UR, LR)) ) return true;
 			return false;
 		},
-		
+
 		intersectsLine: function(line2) {
 			var v1 = this.p1, v2 = this.p2;
 			var v3 = line2.p1, v4 = line2.p2;
-			
+
 			var denom = ((v4.y - v3.y) * (v2.x - v1.x)) - ((v4.x - v3.x) * (v2.y - v1.y));
 			var numerator = ((v4.x - v3.x) * (v1.y - v3.y)) - ((v4.y - v3.y) * (v1.x - v3.x));
-		
+
 			var numerator2 = ((v2.x - v1.x) * (v1.y - v3.y)) - ((v2.y - v1.y) * (v1.x - v3.x));
-			
+
 			if ( denom == 0.0 ) {
 				return false;
 			}
 			var ua = numerator / denom;
 			var ub = numerator2 / denom;
-			
+
 			return (ua >= 0.0 && ua <= 1.0 && ub >= 0.0 && ub <= 1.0);
 		}
 	};
-	
+
 	function Highscores() {
-	  
+
 	};
-	
+
 	Highscores.prototype = {
 	  build: function() {
 	      var self = this;
-	    
+
     		var w = (document.clientWidth || window.innerWidth || document.documentElement.clientWidth);
     		var h = (document.clientHeight || window.innerHeight || document.documentElement.clientHeight);
 
@@ -244,79 +244,79 @@ function Asteroids() {
     		}
     		this.container.appendChild(this.close);
     		this.hide();
-    		
+
     		document.body.appendChild(this.container);
 	  },
-	  
+
 		show: function() {
 		  this.build();
 		  this.container.style.display = 'block';
-			
+
 			var self = this;
 			setTimeout(function() {
 			  //self.container.style.webkitTransform = 'scale(1, 1)';
 			}, 50);
-			
+
 			this.sendScore();
 		},
-		
+
 		hide: function() {
 			if ( this.container && this.container.parentNode )
 				this.container.parentNode.removeChild(this.container);
 		},
-		
+
 		sendScore: function() {
 		  var timePlayed = (new Date()).getTime() - window.ASTEROIDS.startedPlaying;
 			this.iframe.src = highscoreURL + "?asd=" + (window.ASTEROIDS.enemiesKilled * 10).toString() + "&sad=" + escape(document.location.href) + '&das=' + timePlayed;
 		}
 	};
-	
+
 	/*
 		end classes, begin code
 	*/
-	
+
 	var that = this;
-	
+
 	var isIE = !!window.ActiveXObject; // IE gets less performance-intensive
 	var isIEQuirks = isIE && document.compatMode == "BackCompat";
-	
+
 	// configuration directives are placed in local variables
 	var w = document.documentElement.clientWidth, h = document.documentElement.clientHeight;
 	if ( isIEQuirks ) {
 		w = document.body.clientWidth;
 		h = document.body.clientHeight;
 	}
-	
+
 	var playerWidth = 20, playerHeight = 30;
-	
+
 	var playerVerts = [[-1 * playerHeight/2, -1 * playerWidth/2], [-1 * playerHeight/2, playerWidth/2], [playerHeight/2, 0]];
-	
+
 	var ignoredTypes = ['HTML', 'HEAD', 'BODY', 'SCRIPT', 'TITLE', 'META', 'STYLE', 'LINK'];
 	if ( window.ActiveXObject )
 		ignoredTypes = ['HTML', 'HEAD', 'BODY', 'SCRIPT', 'TITLE', 'META', 'STYLE', 'LINK', 'SHAPE', 'LINE', 'GROUP', 'IMAGE', 'STROKE', 'FILL', 'SKEW', 'PATH', 'TEXTPATH', 'INS']; // Half of these are for IE g_vml
 	var hiddenTypes = ['BR', 'HR'];
-	
+
 	var FPS = 50;
-	
+
 	// units/second
 	var acc			  = 300;
 	var maxSpeed	  = 600;
 	var rotSpeed	  = 360; // one rotation per second
 	var bulletSpeed	  = 700;
 	var particleSpeed = 400;
-	
+
 	var timeBetweenFire = 150; // how many milliseconds between shots
 	var timeBetweenBlink = 250; // milliseconds between enemy blink
 	var timeBetweenEnemyUpdate = isIE ? 10000 : 2000;
 	var bulletRadius = 2;
 	var maxParticles = isIE ? 20 : 40;
 	var maxBullets = isIE ? 10 : 20;
-	
+
 	var highscoreURL = BASEPATH + "highscores/";
-	
+
 	// generated every 10 ms
 	this.flame = {r: [], y: []};
-	
+
 	// blink style
 	this.toggleBlinkStyle = function () {
 		if (this.updated.blink.isActive) {
@@ -329,7 +329,7 @@ function Asteroids() {
 	};
 
 	addStylesheet(".ASTEROIDSBLINK .ASTEROIDSYEAHENEMY", "outline: 2px dotted red;");
-	
+
 	this.pos = new Vector(100, 100);
 	this.lastPos = false;
 	this.vel = new Vector(0, 0);
@@ -342,22 +342,22 @@ function Asteroids() {
 		blink: {time: 0, isActive: false}
 	};
 	this.scrollPos = new Vector(0, 0);
-	
+
 	this.bullets = [];
-	
+
 	// Enemies lay first in this.enemies, when they are shot they are moved to this.dying
 	this.enemies = [];
 	this.dying = [];
 	this.totalEnemies = 0;
-	
+
 	// Particles are created when something is shot
 	this.particles = [];
-	
+
 	// things to shoot is everything textual and an element of type not specified in types AND not a navigation element (see further down)
 	function updateEnemyIndex() {
 		for ( var i = 0, enemy; enemy = that.enemies[i]; i++ )
 			removeClass(enemy, "ASTEROIDSYEAHENEMY");
-			
+
 		var all = document.body.getElementsByTagName('*');
 		that.enemies = [];
 		for ( var i = 0, el; el = all[i]; i++ ) {
@@ -365,9 +365,9 @@ function Asteroids() {
 			if ( indexOf(ignoredTypes, el.tagName.toUpperCase()) == -1 && el.prefix != 'g_vml_' && hasOnlyTextualChildren(el) && el.className != "ASTEROIDSYEAH" && el.offsetHeight > 0 ) {
 				el.aSize = size(el);
 				that.enemies.push(el);
-				
+
 				addClass(el, "ASTEROIDSYEAHENEMY");
-				
+
 				// this is only for enemycounting
 				if ( ! el.aAdded ) {
 					el.aAdded = true;
@@ -377,7 +377,7 @@ function Asteroids() {
 		}
 	};
 	updateEnemyIndex();
-	
+
 	// createFlames create the vectors for the flames of the ship
 	var createFlames;
 	(function () {
@@ -399,7 +399,7 @@ function Asteroids() {
 			}
 
 			that.flame.r.push([-1 * halfPlayerHeight, halfR]);
-			
+
 			// ... And now the yellow flames
 			for ( var x = 0; x < yWidth; x += yIncrease ) {
 				that.flame.y.push([-random(2, 7) - halfPlayerHeight, x - halfY]);
@@ -408,47 +408,47 @@ function Asteroids() {
 			that.flame.y.push([-1 * halfPlayerHeight, halfY]);
 		};
 	})();
-	
+
 	createFlames();
-	
+
 	/*
 		Math operations
 	*/
-	
+
 	function radians(deg) {
 		return deg * 0.0174532925;
 	};
-	
+
 	function degrees(rad) {
 		return rad * 57.2957795;
 	};
-	
+
 	function random(from, to) {
 		return Math.floor(Math.random() * (to + 1) + from);
 	};
-	
+
 	/*
 		Misc operations
 	*/
-	
+
 	function code(name) {
 		var table = {'up': 38, 'down': 40, 'left': 37, 'right': 39, 'esc': 27};
 		if ( table[name] ) return table[name];
 		return name.charCodeAt(0);
 	};
-	
+
 	function boundsCheck(vec) {
 		if ( vec.x > w )
 			vec.x = 0;
 		else if ( vec.x < 0 )
 			vec.x = w;
-		
+
 		if ( vec.y > h )
 			vec.y = 0;
 		else if ( vec.y < 0 )
-			vec.y = h;	
+			vec.y = h;
 	};
-	
+
 	function size(element) {
 		var el = element, left = 0, top = 0;
 		do {
@@ -458,7 +458,7 @@ function Asteroids() {
 		} while (el);
 		return {x: left, y: top, width: element.offsetWidth || 10, height: element.offsetHeight || 10};
 	};
-	
+
 	// Taken from:
 	// http://www.quirksmode.org/blog/archives/2005/10/_and_the_winner_1.html
 	function addEvent( obj, type, fn ) {
@@ -480,19 +480,19 @@ function Asteroids() {
 			obj["e"+type+fn] = null;
 		}
 	}
-	
+
 	function arrayRemove(array, from, to) {
 		var rest = array.slice((to || from) + 1 || array.length);
 		array.length = from < 0 ? array.length + from : from;
 		return array.push.apply(array, rest);
 	};
-	
+
 	function applyVisibility(vis) {
 		for ( var i = 0, p; p = window.ASTEROIDSPLAYERS[i]; i++ ) {
 			p.gameContainer.style.visibility = vis;
 		}
 	}
-	
+
 	function getElementFromPoint(x, y) {
 		// hide canvas so it isn't picked up
 		applyVisibility('hidden');
@@ -511,7 +511,7 @@ function Asteroids() {
 		applyVisibility('visible');
 		return element;
 	};
-	
+
 	function addParticles(startPos) {
 		var time = new Date().getTime();
 		var amount = maxParticles;
@@ -524,15 +524,15 @@ function Asteroids() {
 			});
 		}
 	};
-	
+
 	function setScore() {
 		that.points.innerHTML = window.ASTEROIDS.enemiesKilled * 10;
 	};
-	
+
 	function hasOnlyTextualChildren(element) {
 		if ( element.offsetLeft < -100 && element.offsetWidth > 0 && element.offsetHeight > 0 ) return false;
 		if ( indexOf(hiddenTypes, element.tagName) != -1 ) return true;
-		
+
 		if ( element.offsetWidth == 0 && element.offsetHeight == 0 ) return false;
 		for ( var i = 0; i < element.childNodes.length; i++ ) {
 			// <br /> doesn't count... and empty elements
@@ -543,7 +543,7 @@ function Asteroids() {
 		}
 		return true;
 	};
-	
+
 	function indexOf(arr, item, from){
 		if ( arr.indexOf ) return arr.indexOf(item, from);
 		var len = arr.length;
@@ -552,18 +552,18 @@ function Asteroids() {
 		}
 		return -1;
 	};
-	
+
 	// taken from MooTools Core
 	function addClass(element, className) {
 		if ( element.className.indexOf(className) == -1)
 			element.className = (element.className + ' ' + className).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	};
-	
+
 	// taken from MooTools Core
 	function removeClass(element, className) {
 		element.className = element.className.replace(new RegExp('(^|\\s)' + className + '(?:\\s|$)'), '$1');
 	};
-	
+
 	function addStylesheet(selector, rules) {
 		var stylesheet = document.createElement('style');
 		stylesheet.type = 'text/css';
@@ -576,21 +576,21 @@ function Asteroids() {
 		}
 		document.getElementsByTagName("head")[0].appendChild(stylesheet);
 	};
-	
+
 	function removeStylesheet(name) {
 		var stylesheet = document.getElementById(name);
 		if ( stylesheet ) {
 			stylesheet.parentNode.removeChild(stylesheet);
 		}
 	};
-	
+
 	/*
 		== Setup ==
 	*/
 	this.gameContainer = document.createElement('div');
 	this.gameContainer.className = 'ASTEROIDSYEAH';
 	document.body.appendChild(this.gameContainer);
-	
+
 	this.canvas = document.createElement('canvas');
 	this.canvas.setAttribute('width', w);
 	this.canvas.setAttribute('height', h);
@@ -605,7 +605,7 @@ function Asteroids() {
 		right = "0px";
 		zIndex = "10000";
 	}
-	
+
 	// Is IE
 	if ( typeof G_vmlCanvasManager != 'undefined' ) {
 		this.canvas = G_vmlCanvasManager.initElement(this.canvas);
@@ -617,7 +617,7 @@ function Asteroids() {
 			alert('This program does not yet support your browser. Please join me at http://github.com/erkie/erkie.github.com if you think you can help');
 		}
 	}
-	
+
 	addEvent(this.canvas, 'mousedown', function(e) {
 		e = e || window.event;
 		var message = document.createElement('span');
@@ -627,29 +627,29 @@ function Asteroids() {
 		message.style.color = "black";
 		message.innerHTML = 'Press Esc to quit';
 		document.body.appendChild(message);
-		
+
 		var x = e.pageX || (e.clientX + document.documentElement.scrollLeft);
 		var y = e.pageY || (e.clientY + document.documentElement.scrollTop);
 		message.style.left = x - message.offsetWidth/2 + 'px';
 		message.style.top = y - message.offsetHeight/2 + 'px';
-		
+
 		setTimeout(function() {
 			try {
 				message.parentNode.removeChild(message);
 			} catch ( e ) {}
 		}, 1000);
 	});
-	
+
 	var eventResize = function() {
 		if ( ! isIE ) {
 			that.canvas.style.display = "none";
-			
+
 			w = document.documentElement.clientWidth;
 			h = document.documentElement.clientHeight;
-			
+
 			that.canvas.setAttribute('width', w);
 			that.canvas.setAttribute('height', h);
-			
+
 			with ( that.canvas.style ) {
 				display = "block";
 				width = w + "px";
@@ -658,25 +658,25 @@ function Asteroids() {
 		} else {
 			w = document.documentElement.clientWidth;
 			h = document.documentElement.clientHeight;
-			
+
 			if ( isIEQuirks ) {
 				w = document.body.clientWidth;
 				h = document.body.clientHeight;
 			}
-			
+
 			that.canvas.setAttribute('width', w);
 			that.canvas.setAttribute('height', h);
 		}
 		forceChange = true;
 	};
 	addEvent(window, 'resize', eventResize);
-	
+
 	this.gameContainer.appendChild(this.canvas);
 	this.ctx = this.canvas.getContext("2d");
-	
+
 	this.ctx.fillStyle = "black";
 	this.ctx.strokeStyle = "black";
-	
+
 	// navigation wrapper element
 	if ( ! document.getElementById('ASTEROIDS-NAVIGATION') ) {
 		this.navigation = document.createElement('div');
@@ -697,7 +697,7 @@ function Asteroids() {
 			borderRadius = "3px";
 		}
 		this.gameContainer.appendChild(this.navigation);
-		
+
 		// points
 		this.points = document.createElement('span');
 		this.points.id = 'ASTEROIDS-POINTS';
@@ -709,7 +709,7 @@ function Asteroids() {
 		}
 		this.points.className = "ASTEROIDSYEAH";
 		this.navigation.appendChild(this.points);
-		
+
 		// highscore link
 		this.highscoreLink = document.createElement('a');
 		this.highscoreLink.className = "ASTEROIDSYEAH";
@@ -727,10 +727,10 @@ function Asteroids() {
 			left: '30px',
 			top: '-3px'
 		}
-		
+
 		for ( var key in css ) if ( css.hasOwnProperty(key) )
 		  this.highscoreLink.style[key] = css[key];
-		
+
 		this.highscoreLink.href = '#';
 		this.highscoreLink.innerHTML = "Submit highscore";
 		this.navigation.appendChild(this.highscoreLink);
@@ -753,15 +753,15 @@ function Asteroids() {
 		this.navigation = document.getElementById('ASTEROIDS-NAVIGATION');
 		this.points = document.getElementById('ASTEROIDS-POINTS');
 	}
-	
+
 	// Because IE quirks does not understand position: fixed we set to absolute and just reposition it everything frame
 	if ( isIEQuirks ) {
 		this.gameContainer.style.position =
 			this.canvas.style.position =
-			this.navigation.style.position 
+			this.navigation.style.position
 				= "absolute";
 	}
-	
+
 	setScore();
 	// For ie
 	if ( typeof G_vmlCanvasManager != 'undefined' ) {
@@ -769,28 +769,28 @@ function Asteroids() {
 		for ( var i = 0, c; c = children[i]; i++ )
 			addClass(c, 'ASTEROIDSYEAH');
 	}
-	
+
 	/*
 		== Events ==
 	*/
-	
+
 	var eventKeydown = function(event) {
 		event = event || window.event;
 		if ( event.ctrlKey || event.shiftKey )
 			return;
 		that.keysPressed[event.keyCode] = true;
-		
+
 		switch ( event.keyCode ) {
 			case code(' '):
 				that.firedAt = 1;
 			break;
 		}
-		
+
 		// check here so we can stop propagation appropriately
 		if ( indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('B'), code('W'), code('A'), code('S'), code('D')], event.keyCode) != -1 ) {
 			if ( event.ctrlKey || event.shiftKey )
 				return;
-			
+
 			if ( event.preventDefault )
 				event.preventDefault();
 			if ( event.stopPropagation)
@@ -801,13 +801,13 @@ function Asteroids() {
 		}
 	};
 	addEvent(document, 'keydown', eventKeydown);
-	
+
 	var eventKeypress = function(event) {
 		event = event || window.event;
 		if ( indexOf([code('up'), code('down'), code('right'), code('left'), code(' '), code('W'), code('A'), code('S'), code('D')], event.keyCode || event.which) != -1 ) {
 			if ( event.ctrlKey || event.shiftKey )
 				return;
-			
+
 			if ( event.preventDefault )
 				event.preventDefault();
 			if ( event.stopPropagation )
@@ -818,7 +818,7 @@ function Asteroids() {
 		}
 	};
 	addEvent(document, 'keypress', eventKeypress);
-	
+
 	var eventKeyup = function(event) {
 		event = event || window.event;
 		that.keysPressed[event.keyCode] = false;
@@ -834,17 +834,17 @@ function Asteroids() {
 		}
 	};
 	addEvent(document, 'keyup', eventKeyup);
-	
+
 	/*
 		Context operations
 	*/
-	
+
 	this.ctx.clear = function() {
 		this.clearRect(0, 0, w, h);
 	};
-	
+
 	this.ctx.clear();
-	
+
 	this.ctx.drawLine = function(xFrom, yFrom, xTo, yTo) {
 		this.beginPath();
 		this.moveTo(xFrom, yFrom);
@@ -853,7 +853,7 @@ function Asteroids() {
 		this.closePath();
 		this.fill();
 	};
-	
+
 	this.ctx.tracePoly = function(verts) {
 		this.beginPath();
 		this.moveTo(verts[0][0], verts[0][1]);
@@ -861,13 +861,13 @@ function Asteroids() {
 			this.lineTo(verts[i][0], verts[i][1]);
 		this.closePath();
 	};
-	
+
 	var THEPLAYER = false;
 	if ( window.KICKASSIMG ) {
 		THEPLAYER = document.createElement('img');
 		THEPLAYER.src = window.KICKASSIMG;
 	}
-	
+
 	this.ctx.drawPlayer = function() {
 		if ( ! THEPLAYER ) {
 			this.save();
@@ -887,9 +887,9 @@ function Asteroids() {
 			this.restore();
 		}
 	};
-	
+
 	var PI_SQ = Math.PI*2;
-	
+
 	this.ctx.drawBullets = function(bullets) {
 		for ( var i = 0; i < bullets.length; i++ ) {
 			this.beginPath();
@@ -898,59 +898,59 @@ function Asteroids() {
 			this.fill();
 		}
 	};
-	
+
 	var randomParticleColor = function() {
 		return (['red', 'yellow'])[random(0, 1)];
 	};
-	
+
 	this.ctx.drawParticles = function(particles) {
 		var oldColor = this.fillStyle;
-		
+
 		for ( var i = 0; i < particles.length; i++ ) {
 			this.fillStyle = randomParticleColor();
 			this.drawLine(particles[i].pos.x, particles[i].pos.y, particles[i].pos.x - particles[i].dir.x * 10, particles[i].pos.y - particles[i].dir.y * 10);
 		}
-		
+
 		this.fillStyle = oldColor;
 	};
-	
+
 	this.ctx.drawFlames = function(flame) {
 		if ( THEPLAYER ) return;
-		
+
 		this.save();
-		
+
 		this.translate(that.pos.x, that.pos.y);
 		this.rotate(that.dir.angle());
-		
+
 		var oldColor = this.strokeStyle;
 		this.strokeStyle = "red";
 		this.tracePoly(flame.r);
 		this.stroke();
-		
+
 		this.strokeStyle = "yellow";
 		this.tracePoly(flame.y);
 		this.stroke();
-		
+
 		this.strokeStyle = oldColor;
 		this.restore();
 	};
-	
+
 	/*
 		Game loop
 	*/
-	
+
 	// Attempt to focus window if possible, so keyboard events are posted to us
 	try {
 		window.focus();
 	} catch ( e ) {}
-	
+
 	addParticles(this.pos);
 	addClass(document.body, 'ASTEROIDSYEAH');
-	
+
 	var isRunning = true;
 	var lastUpdate = new Date().getTime();
 	var forceChange = false;
-	
+
 	this.update = function() {
 		// ==
 		// logic
@@ -958,40 +958,40 @@ function Asteroids() {
 		var nowTime = new Date().getTime();
 		var tDelta = (nowTime - lastUpdate) / 1000;
 		lastUpdate = nowTime;
-		
+
 		// update flame and timer if needed
 		var drawFlame = false;
 		if ( nowTime - this.updated.flame > 50 ) {
 			createFlames();
 			this.updated.flame = nowTime;
 		}
-		
+
 		this.scrollPos.x = window.pageXOffset || document.documentElement.scrollLeft;
 		this.scrollPos.y = window.pageYOffset || document.documentElement.scrollTop;
-		
+
 		// update player
 		// move forward
 		if ( (this.keysPressed[code('up')]) || (this.keysPressed[code('W')]) ) {
 			this.vel.add(this.dir.mulNew(acc * tDelta));
-			
+
 			drawFlame = true;
-		} else {		
+		} else {
 			// decrease speed of player
 			this.vel.mul(0.96);
 		}
-		
+
 		// rotate counter-clockwise
 		if ( (this.keysPressed[code('left')]) || (this.keysPressed[code('A')]) ) {
 			forceChange = true;
 			this.dir.rotate(radians(rotSpeed * tDelta * -1));
 		}
-		
+
 		// rotate clockwise
 		if ( (this.keysPressed[code('right')]) || (this.keysPressed[code('D')]) ) {
 			forceChange = true;
 			this.dir.rotate(radians(rotSpeed * tDelta));
 		}
-		
+
 		// fire
 		if ( this.keysPressed[code(' ')] && nowTime - this.firedAt > timeBetweenFire ) {
 			this.bullets.unshift({
@@ -1000,23 +1000,23 @@ function Asteroids() {
 				'startVel': this.vel.cp(),
 				'cameAlive': nowTime
 			});
-			
+
 			this.firedAt = nowTime;
-			
+
 			if ( this.bullets.length > maxBullets ) {
 				this.bullets.pop();
 			}
 		}
-		
+
 		// add blink
 		if ( this.keysPressed[code('B')] ) {
 			if ( ! this.updated.enemies ) {
 				updateEnemyIndex();
 				this.updated.enemies = true;
 			}
-			
+
 			forceChange = true;
-			
+
 			this.updated.blink.time += tDelta * 1000;
 			if ( this.updated.blink.time > timeBetweenBlink ) {
 				this.toggleBlinkStyle();
@@ -1025,20 +1025,20 @@ function Asteroids() {
 		} else {
 			this.updated.enemies = false;
 		}
-		
+
 		if ( this.keysPressed[code('esc')] ) {
 			destroy.apply(this);
 			return;
 		}
-		
+
 		// cap speed
 		if ( this.vel.len() > maxSpeed ) {
 			this.vel.setLength(maxSpeed);
 		}
-		
+
 		// add velocity to player (physics)
 		this.pos.add(this.vel.mulNew(tDelta));
-		
+
 		// check bounds X of player, if we go outside we scroll accordingly
 		if ( this.pos.x > w ) {
 			window.scrollTo(this.scrollPos.x + 50, this.scrollPos.y);
@@ -1047,7 +1047,7 @@ function Asteroids() {
 			window.scrollTo(this.scrollPos.x - 50, this.scrollPos.y);
 			this.pos.x = w;
 		}
-		
+
 		// check bounds Y
 		if ( this.pos.y > h ) {
 			window.scrollTo(this.scrollPos.x, this.scrollPos.y + h * 0.75);
@@ -1056,7 +1056,7 @@ function Asteroids() {
 			window.scrollTo(this.scrollPos.x, this.scrollPos.y - h * 0.75);
 			this.pos.y = h;
 		}
-		
+
 		// update positions of bullets
 		for ( var i = this.bullets.length - 1; i >= 0; i-- ) {
 			// bullets should only live for 2 seconds
@@ -1065,12 +1065,12 @@ function Asteroids() {
 				forceChange = true;
 				continue;
 			}
-			
+
 			var bulletVel = this.bullets[i].dir.setLengthNew(bulletSpeed * tDelta).add(this.bullets[i].startVel.mulNew(tDelta));
-			
+
 			this.bullets[i].pos.add(bulletVel);
 			boundsCheck(this.bullets[i].pos);
-			
+
 			// check collisions
 			var murdered = getElementFromPoint(this.bullets[i].pos.x, this.bullets[i].pos.y);
 			if (
@@ -1081,12 +1081,12 @@ function Asteroids() {
 				didKill = true;
 				addParticles(this.bullets[i].pos);
 				this.dying.push(murdered);
-			
+
 				this.bullets.splice(i, 1);
 				continue;
 			}
 		}
-		
+
 		if (this.dying.length) {
 			for ( var i = this.dying.length - 1; i >= 0; i-- ) {
 				try {
@@ -1105,46 +1105,46 @@ function Asteroids() {
 		// update particles position
 		for ( var i = this.particles.length - 1; i >= 0; i-- ) {
 			this.particles[i].pos.add(this.particles[i].dir.mulNew(particleSpeed * tDelta * Math.random()));
-			
+
 			if ( nowTime - this.particles[i].cameAlive > 1000 ) {
 				this.particles.splice(i, 1);
 				forceChange = true;
 				continue;
 			}
 		}
-		
+
 		// ==
 		// drawing
 		// ==
-		
+
 		// Reposition the canvas area for IE quirks because it does not understand position: fixed
 		if ( isIEQuirks ) {
 			this.gameContainer.style.left =
 				this.canvas.style.left = document.documentElement.scrollLeft + "px";
 			this.gameContainer.style.top =
 				this.canvas.style.top = document.documentElement.scrollTop + "px";
-			
+
 			this.navigation.style.right = "10px";
 			this.navigation.style.top
 				= document.documentElement.scrollTop + document.body.clientHeight - this.navigation.clientHeight - 10 + "px";
 		}
-		
+
 		// clear
 		if ( forceChange || this.bullets.length != 0 || this.particles.length != 0 || ! this.pos.is(this.lastPos) || this.vel.len() > 0 ) {
 			this.ctx.clear();
-			
+
 			// draw player
 			this.ctx.drawPlayer();
-			
+
 			// draw flames
 			if ( drawFlame )
 				this.ctx.drawFlames(that.flame);
-			
+
 			// draw bullets
 			if (this.bullets.length) {
 				this.ctx.drawBullets(this.bullets);
 			}
-			
+
 			// draw particles
 			if (this.particles.length) {
 				this.ctx.drawParticles(this.particles);
@@ -1153,7 +1153,7 @@ function Asteroids() {
 		this.lastPos = this.pos;
 		forceChange = false;
 	};
-	
+
 	// Start timer
 	var updateFunc = function() {
 		//try {
@@ -1165,7 +1165,7 @@ function Asteroids() {
 		}*/
 	};
 	var interval = setInterval(updateFunc, 1000 / FPS);
-	
+
 	function destroy() {
 		clearInterval(interval);
 		removeEvent(document, 'keydown', eventKeydown);
