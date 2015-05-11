@@ -696,7 +696,7 @@ function Asteroids() {
 			boxShadow = '-2px -2px 15px #333';
 			borderRadius = "3px";
 		}
-		this.gameContainer.appendChild(this.navigation);
+		// this.gameContainer.appendChild(this.navigation);
 
 		// points
 		this.points = document.createElement('span');
@@ -733,7 +733,7 @@ function Asteroids() {
 
 		this.highscoreLink.href = '#';
 		this.highscoreLink.innerHTML = "Submit highscore";
-		this.navigation.appendChild(this.highscoreLink);
+		// this.navigation.appendChild(this.highscoreLink);
 
 
 		// credits for kickass
