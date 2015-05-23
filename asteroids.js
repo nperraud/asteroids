@@ -555,7 +555,7 @@ function Asteroids() {
 
 	// taken from MooTools Core
 	function addClass(element, className) {
-		if ( element.className.indexOf(className) == -1)
+		if ( element && element.className && element.className.indexOf && element.className.indexOf(className) == -1)
 			element.className = (element.className + ' ' + className).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
 	};
 
