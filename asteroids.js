@@ -738,7 +738,7 @@ function Asteroids() {
 
 		// credits for kickass
 		this.credits = document.createElement('div');
-		this.credits.innerHTML = '<div style="padding: 15px 20px 0"><span style="color: red; font-size: 150%">♥</span> this asteroids game? <br><span style="margin-top: 10px; font-size: smaller; color: #666">It\'s made by the awesome folks of <a target="_blank" href="http://kickassapp.com">KICK ASS</a> App. <br>Checkout their game in the <a href="http://itunes.apple.com/us/app/kick-ass-destroy-the-web/id436623109?mt=8" target="_blank">App Store</a>.</span></div>';
+		this.credits.innerHTML = '<div style="padding: 15px 20px 0"><p>How to play?<ul><li><strong>Steer</strong> with the arrow-keys.</li><li><strong>Shoot</strong> with space.</li><li>To <strong>activate</strong> click the bookmark <em>once</em> on your webpage of choice.</li><li>Can\'t see your remaining enemies? Then <strong>press and hold B</strong></li></ul> Exit the game by pressing escape.</p><span style="color: red; font-size: 150%">♥</span> this asteroids game? <br><span style="margin-top: 10px; font-size: smaller; color: #666">It\'s made by the awesome folks of <a target="_blank" href="http://kickassapp.com">KICK ASS</a> App. <br>Checkout their game in the <a href="http://itunes.apple.com/us/app/kick-ass-destroy-the-web/id436623109?mt=8" target="_blank">App Store</a>.</span></div>';
 		this.navigation.appendChild(this.credits);
 
 		this.highscoreLink.onclick = function() {
